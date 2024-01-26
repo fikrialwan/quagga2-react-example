@@ -19,8 +19,9 @@ function getMedianOfCodeErrors(decodedCodes) {
 }
 
 const defaultConstraints = {
-    width: 640,
-    height: 480,
+    width: { min: 640, ideal: 1280, max: 1920 },
+    height: { min: 480, ideal: 720, max: 1080 },
+    aspectRatio: { min: 1, max: 2, ideal: 1 },
 };
 
 const defaultLocatorSettings = {
