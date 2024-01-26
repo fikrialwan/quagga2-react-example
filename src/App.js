@@ -10,6 +10,7 @@ const App = () => {
     const [cameraError, setCameraError] = useState(null); // error message from failing to access the camera
     const [results, setResults] = useState([]); // list of scanned results
     const [torchOn, setTorch] = useState(false); // toggleable state for "should torch be on"
+    const [resultScan, setResultsScan] = useState()
     const scannerRef = useRef(null); // reference to the scanner element in the DOM
 
     // at start, we need to get a list of the available cameras.  We can do that with Quagga.CameraAccess.enumerateVideoDevices.
@@ -34,11 +35,11 @@ const App = () => {
             return cameras;
         };
         enableCamera()
-        .then(disableCamera)
-        .then(enumerateCameras)
-        .then((cameras) => setCameras(cameras))
-        .then(() => Quagga.CameraAccess.disableTorch()) // disable torch at start, in case it was enabled before and we hot-reloaded
-        .catch((err) => setCameraError(err));
+            .then(disableCamera)
+            .then(enumerateCameras)
+            .then((cameras) => setCameras(cameras))
+            .then(() => Quagga.CameraAccess.disableTorch()) // disable torch at start, in case it was enabled before and we hot-reloaded
+            .catch((err) => setCameraError(err));
         return () => disableCamera();
     }, []);
 
@@ -68,11 +69,12 @@ const App = () => {
                 </form>
             }
             <button onClick={onTorchClick}>{torchOn ? 'Disable Torch' : 'Enable Torch'}</button>
-            <button onClick={() => setScanning(!scanning) }>{scanning ? 'Stop' : 'Start'}</button>
+            <button onClick={() => setScanning(!scanning)}>{scanning ? 'Stop' : 'Start'}</button>
             <ul className="results">
                 {results.map((result) => (result.codeResult && <Result key={result.codeResult.code} result={result} />))}
             </ul>
-            <div ref={scannerRef} style={{position: 'relative', border: '3px solid red'}}>
+            {resultScan && <h1>{JSON.stringify(resultScan)}</h1>}
+            <div ref={scannerRef} style={{ position: 'relative', border: '3px solid red' }}>
                 {/* <video style={{ width: window.innerWidth, height: 480, border: '3px solid orange' }}/> */}
                 <canvas className="drawingBuffer" style={{
                     position: 'absolute',
@@ -82,7 +84,10 @@ const App = () => {
                     // width: '100%',
                     border: '3px solid green',
                 }} width="640" height="480" />
-                {scanning ? <Scanner scannerRef={scannerRef} cameraId={cameraId} onDetected={(result) => setResults([...results, result])} /> : null}
+                {scanning ? <Scanner scannerRef={scannerRef} cameraId={cameraId} onDetected={(result) => {
+                    setResults([...results, result])
+                    setResultsScan(result)
+                }} /> : null}
             </div>
         </div>
     );
